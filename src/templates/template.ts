@@ -2,6 +2,8 @@ import camelcase from 'camelcase'
 import { IPropDef, ISwaggerOptions } from '../baseInterfaces'
 import { toBaseType, isDefinedGenericTypes, getDefinedGenericTypes } from '../utils'
 
+import pinyin from 'pinyin';
+
 const baseTypes = ['string', 'number', 'object', 'boolean', 'any']
 const isAdditionalProperties = (x: string) => x === "[additionalProperties: string]"
 const isNotAdditionalProperties = (x: string) => !isAdditionalProperties(x)
@@ -244,14 +246,26 @@ ${options.useStaticMethod ? 'static' : ''} ${camelcase(
 }`
 }
 
+function capitalizeFirstLetter(string: string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 /** serviceTemplate */
 export function serviceTemplate(name: string, body: string, imports: string[] = null) {
   // add base imports
   let mappedImports = !imports ? '' : `import { ${imports.join(',')}, } from './index.defs'\n`
-
+  
+  let className = name.replace(/-/g, '_')
+  let trueName = pinyin(name, {style: pinyin.STYLE_NORMAL})
   // }
-
-
+  if (trueName.length > 1) {
+    className = trueName.map(item => {
+      return capitalizeFirstLetter(item[0])
+    }).join('')
+  } else {
+    className = trueName[0][0]
+  }
+  console.log(name, className)
   return `
 
   ${mappedImports}
