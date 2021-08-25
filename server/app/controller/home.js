@@ -1,5 +1,6 @@
 'use strict';
 
+
 const Controller = require('egg').Controller;
 
 const { codegen } = require('../../../dist/index.js')
@@ -8,6 +9,40 @@ const fs = require('fs-extra')
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 const path = require('path')
+
+
+async function fixFile(folder = '') {
+  let p = path.join(__dirname, `../public/${folder}/src/swagger/services`)
+  let readDir = fs.readdirSync(p);
+  console.log(readDir);
+  
+  let filePaths = readDir.filter( v => v.endsWith('js'))
+    .map(v => {
+      return path.join(p, v)
+    })
+  
+  filePaths.forEach((filepath) => {
+    fs.readFile(filepath, 'utf8', (err, data) => {
+
+      if (!data.match(/import .* from/g)) {
+        return
+      }
+      let newData = data.replace(/(import .* from\s+['"])(.*)(?=['"])/g, '$1$2.js')
+      if (err) throw err;
+
+      console.log(`writing to ${filepath}`)
+      fs.writeFile(filepath, newData, function (err) {
+        if (err) {
+          throw err;
+        }
+        console.log('complete');
+      });
+    })
+
+  })
+  
+  return ''
+}
 
 class HomeController extends Controller {
   async clean() {
@@ -63,9 +98,14 @@ class HomeController extends Controller {
         `${origin}/${publicPath}/src/swagger/services/serviceOptions.js`
       ],
     }
-    ctx.body =  body;
     let p = path.resolve(__dirname, `../public/${folder}`)
+    ctx.body =  body;
     await exec(`tsc -p ${p}`)
+    try {
+      await fixFile(folder)
+    } catch (e) {
+      console.error(e)
+    }
 //     body =`<html>
 // <body>
 // <a href='${publicPath}/src/swagger/services/index.js' download>index</a>

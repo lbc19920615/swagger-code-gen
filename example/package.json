@@ -20,6 +20,7 @@
     "build": "tsc -p ./swagger"
   },
   "devDependencies": {
+    "filehound": "^1.17.4",
     "typescript-transform-extensions": "^1.0.1"
   }
 }

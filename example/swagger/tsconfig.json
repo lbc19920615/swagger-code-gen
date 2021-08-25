@@ -9,10 +9,16 @@
       "dom"
     ],
     "declaration": true, /* Generates corresponding '.d.ts' file. */
-    "sourceMap": true, /* Generates corresponding '.map' file. */
+    "sourceMap": false, /* Generates corresponding '.map' file. */
     "outDir": "../src", /* Redirect output structure to the directory. */
     "rootDir": "./", /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */
     "moduleResolution": "node",
+    "plugins": [
+      {
+        "transform": "typescript-transform-extensions",
+        "extensions": {".ts": ".js"}
+      }
+    ]
   },
   "exclude": [
     "./customerDefinition.ts"
