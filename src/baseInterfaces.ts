@@ -7,6 +7,7 @@ export interface ISwaggerOptions {
   outputDir?: string
   fileName?: string
   remoteUrl?: string
+  handleRemoteResponse?: Function
   source?: any
   useStaticMethod?: boolean | undefined
   useCustomerRequestInstance?: boolean | undefined

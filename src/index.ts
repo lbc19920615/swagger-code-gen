@@ -47,12 +47,15 @@ export async function codegen(params: ISwaggerOptions) {
   setDefinedGenericTypes(params.extendGenericType)
   // 获取接口定义文件
   if (params.remoteUrl) {
-    const { data: swaggerJson } = await axios({ url: params.remoteUrl, responseType: 'text' })
+    let { data: swaggerJson } = await axios({ url: params.remoteUrl, responseType: 'text' })
     if (Object.prototype.toString.call(swaggerJson) === '[object String]') {
       fs.writeFileSync('./cache_swagger.json', swaggerJson)
       swaggerSource = require(path.resolve('./cache_swagger.json'))
     } else {
       swaggerSource = <ISwaggerSource>swaggerJson
+    }
+    if (params.handleRemoteResponse) {
+      swaggerSource = <ISwaggerSource>params.handleRemoteResponse(swaggerSource);
     }
   } else if (params.source) {
     swaggerSource = <ISwaggerSource>params.source

@@ -265,7 +265,7 @@ export function serviceTemplate(name: string, body: string, imports: string[] = 
   } else {
     className = trueName[0][0]
   }
-  console.log(name, className)
+  // console.log(name, className)
   return `
 
   ${mappedImports}

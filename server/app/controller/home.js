@@ -1,5 +1,24 @@
 'use strict';
 
+/**
+ * String.prototype.replaceAll() polyfill
+ * https://gomakethings.com/how-to-replace-a-section-of-a-string-with-another-one-with-vanilla-js/
+ * @author Chris Ferdinandi
+ * @license MIT
+ */
+if (!String.prototype.replaceAll) {
+  String.prototype.replaceAll = function(str, newStr){
+
+    // If a regex pattern
+    if (Object.prototype.toString.call(str).toLowerCase() === '[object regexp]') {
+      return this.replace(str, newStr);
+    }
+
+    // If a string
+    return this.replace(new RegExp(str, 'g'), newStr);
+
+  };
+}
 
 const Controller = require('egg').Controller;
 
@@ -9,12 +28,17 @@ const fs = require('fs-extra')
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 const path = require('path')
+const lodash = require('lodash')
+const pinyin = require('pinyin');
 
+function capitalizeFirstLetter(string = '') {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
 
 async function fixFile(folder = '') {
   let p = path.join(__dirname, `../public/${folder}/src/swagger/services`)
   let readDir = fs.readdirSync(p);
-  console.log(readDir);
+  // console.log(readDir);
   
   let filePaths = readDir.filter( v => v.endsWith('js'))
     .map(v => {
@@ -42,6 +66,16 @@ async function fixFile(folder = '') {
   })
   
   return ''
+}
+
+function hasChina(s){
+  var patrn=/[\u4E00-\u9FA5]|[\uFE30-\uFFA0]/gi;
+  if(!patrn.exec(s)){
+    return false;
+  }
+  else{
+    return true;
+  }
 }
 
 class HomeController extends Controller {
@@ -80,6 +114,31 @@ class HomeController extends Controller {
       // source: require('../../../example/swagger.json'),
       // remoteUrl: 'http://192.168.1.60:7888/api-system/v2/api-docs',
       remoteUrl: query.url,
+      handleRemoteResponse(swaggerSource) {
+        // console.log(swaggerSource)
+        let swaggerSourceStr = JSON.stringify(swaggerSource)
+        let tags = lodash.get(swaggerSource, 'tags', [])
+        let tagNames = tags.map( v => v.name) 
+        let notValid = tagNames.filter(v => v.indexOf('-') > -1).filter(v => hasChina(v))
+        if (notValid.length > 0) {
+          // console.log(notValid)
+          notValid.forEach(notValidName => {
+            let className = ''
+            // let trueName = notValidName.replaceAll('-', '_')
+            let trueName = pinyin(notValidName, {style: pinyin.STYLE_NORMAL})
+            if (trueName.length > 1) {
+              className = trueName.map(item => {
+                return capitalizeFirstLetter(item[0])
+              }).join('')
+            } else {
+              className = trueName[0][0]
+            }
+            console.log(notValidName, trueName, className)
+            swaggerSourceStr = swaggerSourceStr.replaceAll(notValidName, className)
+          })
+        }
+        return JSON.parse(swaggerSourceStr)
+      },
       outputDir: `${dest}/swagger/services`,
       strictNullChecks: false,
       // useCustomerRequestInstance: true,
