@@ -35,8 +35,7 @@ function capitalizeFirstLetter(string = '') {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-async function fixFile(folder = '') {
-  let p = path.join(__dirname, `../public/${folder}/src/swagger/services`)
+async function fixFile(p, folder = '') {
   let readDir = fs.readdirSync(p);
   // console.log(readDir);
   
@@ -109,6 +108,7 @@ class HomeController extends Controller {
     fs.removeSync(`${dest}`)
     fs.copySync('./app/public/template/', dest)
     fs.mkdirsSync(`${dest}/swagger`)
+    let swaggerSourceStr = ''
     await codegen({
       methodNameMode: 'path',
       // source: require('../../../example/swagger.json'),
@@ -116,7 +116,7 @@ class HomeController extends Controller {
       remoteUrl: query.url,
       handleRemoteResponse(swaggerSource) {
         // console.log(swaggerSource)
-        let swaggerSourceStr = JSON.stringify(swaggerSource)
+        swaggerSourceStr = JSON.stringify(swaggerSource)
         let tags = lodash.get(swaggerSource, 'tags', [])
         let tagNames = tags.map( v => v.name) 
         let notValid = tagNames.filter(v => hasChina(v))
@@ -160,8 +160,11 @@ class HomeController extends Controller {
     let p = path.resolve(__dirname, `../public/${folder}`)
     ctx.body =  body;
     await exec(`tsc -p ${p}`)
+
+    let findP = path.join(__dirname, `../public/${folder}/src/swagger/services`)
     try {
-      await fixFile(folder)
+      fs.outputFileSync(path.join(findP, 'config.js'), `export default ${swaggerSourceStr}`)
+      await fixFile(findP, folder)
     } catch (e) {
       console.error(e)
     }
