@@ -119,7 +119,7 @@ class HomeController extends Controller {
         let swaggerSourceStr = JSON.stringify(swaggerSource)
         let tags = lodash.get(swaggerSource, 'tags', [])
         let tagNames = tags.map( v => v.name) 
-        let notValid = tagNames.filter(v => v.indexOf('-') > -1).filter(v => hasChina(v))
+        let notValid = tagNames.filter(v => hasChina(v))
         if (notValid.length > 0) {
           // console.log(notValid)
           notValid.forEach(notValidName => {
