@@ -18,5 +18,8 @@
     "build:api-include": "node ./swagger/codegen.include.js && npm run build",
     "build:api3": "node ./swagger/codegen.v3.js && npm run build",
     "build": "tsc -p ./swagger"
+  },
+  "devDependencies": {
+    "typescript-transform-extensions": "^1.0.1"
   }
 }
