@@ -218,8 +218,13 @@ export function requestTemplate(name: string, requestSchema: IRequestSchema, opt
     : 'resolve'
 
   return `
+static  ${camelcase(
+    name
+  )}Path = '${path}'
+
 /**
  * ${summary || ''}
+ * @path ${path}
  */
 ${options.useStaticMethod ? 'static' : ''} ${camelcase(
     name
