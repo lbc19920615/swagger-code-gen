@@ -222,6 +222,10 @@ static  ${camelcase(
     name
   )}Path = '${path}'
 
+static  ${camelcase(
+    name
+  )}Method = '${method}'
+
 /**
  * ${summary || ''}
  * @path ${path}
